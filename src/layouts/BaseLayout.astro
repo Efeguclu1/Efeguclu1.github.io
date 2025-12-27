@@ -19,6 +19,15 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <!-- Google Analytics -->
+    <script is:inline src="https://www.googletagmanager.com/gtag/js?id=G-P51K4GPK7K"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-P51K4GPK7K');
+    </script>
+
   </head>
 
   <body>
