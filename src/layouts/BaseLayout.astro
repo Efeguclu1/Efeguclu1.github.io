@@ -1,0 +1,57 @@
+---
+const {
+  title = "Efe Güçlü",
+  description = "Personal website of Efe Güçlü",
+} = Astro.props;
+
+const nav = [
+  { href: "/", label: "Home" },
+  { href: "/cv", label: "CV" },
+  { href: "/projects", label: "Projects" },
+  { href: "/blog", label: "Blog" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+
+  <body>
+    <header class="container">
+      <a class="brand" href="/">Efe Güçlü</a>
+      <nav class="nav">
+        {nav.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))}
+      </nav>
+    </header>
+
+    <main class="container">
+      <slot />
+    </main>
+
+    <footer class="container footer">
+      <small>© {new Date().getFullYear()} Efe Güçlü. All rights reserved.</small>
+    </footer>
+
+    <style>
+      :global(body) {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .container { max-width: 980px; margin: 0 auto; padding: 20px; }
+      header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; }
+      .brand { font-weight: 700; text-decoration: none; color: inherit; }
+      .nav { display: flex; gap: 14px; }
+      .nav a { text-decoration: none; color: inherit; opacity: 0.85; }
+      .nav a:hover { opacity: 1; text-decoration: underline; }
+      .footer { border-top: 1px solid #e5e7eb; opacity: 0.8; }
+    </style>
+  </body>
+</html>

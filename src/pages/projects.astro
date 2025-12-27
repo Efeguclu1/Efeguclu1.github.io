@@ -1,0 +1,100 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const projects = [
+  {
+    name: "Cloud-Native E-Commerce Platform on GCP",
+    date: "May 2025",
+    summary:
+      "Migrated a MERN e-commerce app to a cloud-native architecture on Google Cloud.",
+    highlights: [
+      "Microservices on GKE; serverless components on Cloud Run",
+      "Infrastructure as Code with Terraform",
+      "Load testing and scalability monitoring with Locust",
+    ],
+    stack: ["GCP", "GKE", "Cloud Run", "Terraform", "Locust", "MERN"],
+    links: [
+      // { label: "GitHub", href: "https://github.com/..." }
+    ],
+  },
+  {
+    name: "Online Store Web Application",
+    date: "May 2025",
+    summary:
+      "Full-stack containerized e-commerce application built with agile SCRUM practices.",
+    highlights: [
+      "Authentication, product reviews, order tracking",
+      "Secure data handling and encryption considerations",
+      "Containerized deployment with Docker and Kubernetes",
+    ],
+    stack: ["Node.js", "React", "Docker", "Kubernetes"],
+    links: [],
+  },
+  {
+    name: "Stance Detection (VAST Dataset)",
+    date: "Dec 2024",
+    summary:
+      "Stance detection using ML and transformer-based models with added topic context.",
+    highlights: [
+      "Experimented with BERT and RoBERTa baselines",
+      "Incorporated Wikipedia topic context to improve stance accuracy",
+      "Focused on evaluation and iteration rather than a single model run",
+    ],
+    stack: ["Python", "Transformers", "BERT", "RoBERTa"],
+    links: [],
+  },
+
+];
+---
+
+<BaseLayout
+  title="Efe Güçlü — Projects"
+  description="Selected projects in security, Linux, cloud, and machine learning."
+>
+  <h1>Projects</h1>
+  <p>
+    A selection of course and engineering projects. I focus on clear problem
+    statements, practical implementation, and measurable validation.
+  </p>
+
+  <div class="grid">
+    {projects.map((p) => (
+      <section class="card">
+        <h2>{p.name}</h2>
+        <p class="meta">{p.date}</p>
+        <p>{p.summary}</p>
+
+        <h3>Highlights</h3>
+        <ul>
+          {p.highlights.map((h) => <li>{h}</li>)}
+        </ul>
+
+        <p class="stack">
+          <strong>Stack:</strong> {p.stack.join(" · ")}
+        </p>
+
+        {p.links.length > 0 && (
+          <p class="links">
+            {p.links.map((l, i) => (
+              <>
+                <a href={l.href}>{l.label}</a>
+                {i < p.links.length - 1 ? " · " : ""}
+              </>
+            ))}
+          </p>
+        )}
+      </section>
+    ))}
+  </div>
+
+  <style>
+    .grid { display: grid; gap: 16px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+    .meta { opacity: 0.75; margin-top: -6px; }
+    h2 { margin-bottom: 6px; }
+    h3 { margin-top: 14px; margin-bottom: 6px; font-size: 1rem; }
+    .stack { margin-top: 10px; opacity: 0.9; }
+    .links a { text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</BaseLayout>

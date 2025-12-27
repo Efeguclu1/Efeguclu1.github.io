@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+let posts = [];
+try {
+  posts = (await getCollection("blog"))
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+} catch (e) {
+  // If content collection isn't configured yet, page should still render.
+  posts = [];
+}
+---
+
+<BaseLayout title="Efe Güçlü — Blog" description="Security notes and OverTheWire write-ups by Efe Güçlü.">
+  <h1>Blog</h1>
+  <p>Notes on security, Linux, cloud, and OverTheWire write-ups.</p>
+
+  {posts.length === 0 ? (
+    <p><em>No posts yet. Add a markdown file under <code>src/content/blog</code>.</em></p>
+  ) : (
+    <ul>
+      {posts.map((post) => (
+        <li style="margin-bottom: 14px;">
+          <a href={`/blog/${post.slug}/`}><strong>{post.data.title}</strong></a><br />
+          <small>{post.data.pubDate.toDateString()}</small><br />
+          <span>{post.data.description}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>
