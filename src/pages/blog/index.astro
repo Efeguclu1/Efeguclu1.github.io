@@ -7,67 +7,95 @@ try {
   posts = (await getCollection("blog"))
     .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 } catch (e) {
-  // If content collection isn't configured yet, page should still render.
   posts = [];
+}
+
+function formatDate(date: Date) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
 }
 ---
 
 <BaseLayout title="Efe Güçlü — Blog" description="Security notes and OverTheWire write-ups by Efe Güçlü.">
-  <h1>Blog</h1>
-  <p>Notes on security, Linux, cloud, and OverTheWire write-ups.</p>
+  <div class="page">
+    <h1>Blog</h1>
+    <p class="desc">Notes on security, Linux, cloud, and OverTheWire write-ups.</p>
 
-  {posts.length === 0 ? (
-    <p class="empty"><em>No posts yet. Add a markdown file under <code>src/content/blog</code>.</em></p>
-  ) : (
-    <div class="posts">
-      {posts.map((post) => (
-        <a href={`/blog/${post.slug}/`} class="post-card">
-          <h2>{post.data.title}</h2>
-          <time>{post.data.pubDate.toDateString()}</time>
-          <p>{post.data.description}</p>
-        </a>
-      ))}
-    </div>
-  )}
+    {posts.length === 0 ? (
+      <p class="empty">No posts yet.</p>
+    ) : (
+      <div class="posts">
+        {posts.map((post) => (
+          <a href={`/blog/${post.slug}/`} class="post">
+            <h2>{post.data.title}</h2>
+            <span class="date">{formatDate(post.data.pubDate)}</span>
+            <p>{post.data.description}</p>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
 
   <style>
+    .page {
+      padding: 20px 0;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .desc {
+      color: var(--color-text-muted);
+      margin-bottom: 32px;
+    }
+
     .posts {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      margin-top: 24px;
     }
-    .post-card {
+
+    .post {
       display: block;
       padding: 20px;
       border: 1px solid var(--color-border);
-      border-radius: 12px;
+      border-radius: 6px;
+      background: var(--color-bg-card);
       text-decoration: none;
-      background: var(--color-bg);
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+      transition: border-color var(--transition-fast);
     }
-    .post-card:hover {
-      box-shadow: var(--shadow-md);
+
+    .post:hover {
       border-color: var(--color-border-hover);
-      transform: translateY(-2px);
     }
-    .post-card h2 {
-      margin: 0 0 6px;
-      font-size: 1.25rem;
-      color: var(--color-text);
+
+    .post h2 {
+      font-size: 1rem;
+      color: var(--color-accent);
+      margin: 0 0 8px;
     }
-    .post-card time {
+
+    .post:hover h2 {
+      color: var(--color-accent-hover);
+    }
+
+    .date {
       font-size: 0.85rem;
       color: var(--color-text-subtle);
     }
-    .post-card p {
-      margin: 10px 0 0;
+
+    .post p {
+      margin: 12px 0 0;
       color: var(--color-text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
     }
+
     .empty {
-      color: var(--color-text-muted);
+      color: var(--color-text-subtle);
     }
   </style>
 </BaseLayout>

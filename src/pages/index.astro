@@ -6,76 +6,150 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   title="Efe Güçlü — Computer Science"
   description="Computer science student focused on security, Linux systems, and cloud-native infrastructure."
 >
-  <div class="contact-icons">
-    <a href="mailto:efeguclu3435@gmail.com" aria-label="Email">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-    </a>
-    <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer" aria-label="GitHub">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-    </a>
-    <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer" aria-label="LinkedIn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-    </a>
-  </div>
+  <div class="hero">
+    <p class="prompt">$ whoami</p>
+    <h1>
+      <span class="name glitch" data-text="Efe Güçlü">Efe Güçlü</span><span class="cursor"></span>
+    </h1>
 
-  <h1>Efe Güçlü</h1>
+    <p class="bio">
+      Senior computer science student. I enjoy Linux, security, and cloud infrastructure.
+      I like understanding how systems work, building small automations, and contributing to open source.
+    </p>
 
-  <p>Hi, I’m Efe senior computer science student.</p>
-
-  <p>
-    I enjoy Linux, security, and cloud infrastructure. I like understanding how
-    systems work, building small automations, and contributing to open source.
-  </p>
-
-  <div class="nav-links">
-    <a href="/projects">Projects</a>
-    <a href="/blog">Blog</a>
-    <a href="/cv">CV</a>
+    <div class="icons">
+      <a href="mailto:efeguclu3435@gmail.com" aria-label="Email">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      </a>
+      <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer" aria-label="GitHub">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+      </a>
+    </div>
   </div>
 
   <style>
-    h1 {
-      margin-bottom: 8px;
+    .hero {
+      padding: 40px 0;
     }
-    p {
-      color: var(--color-text);
-      margin-bottom: 16px;
-    }
-    .contact-icons {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin: 12px 0 24px;
-    }
-    .contact-icons a {
+
+    .prompt {
       color: var(--color-text-muted);
-      padding: 8px;
-      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      color: var(--color-accent-hover);
+      margin-bottom: 24px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
     }
-    .contact-icons a:hover {
-      color: var(--color-accent);
-      background: var(--color-bg-subtle);
-      transform: translateY(-2px);
+
+    /* Typing animation */
+    .name {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: none;
+      animation: typing 0.8s steps(9) forwards;
+      width: 0;
     }
-    .nav-links {
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 9ch; }
+    }
+
+    /* Glitch effect */
+    .glitch {
+      position: relative;
+    }
+
+    .glitch::before,
+    .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+    }
+
+    .glitch::before {
+      color: #ff0000;
+      z-index: -1;
+    }
+
+    .glitch::after {
+      color: #00ffff;
+      z-index: -1;
+    }
+
+    .glitch:hover::before {
+      opacity: 0.8;
+      animation: glitch-1 0.2s linear;
+    }
+
+    .glitch:hover::after {
+      opacity: 0.8;
+      animation: glitch-2 0.2s linear;
+    }
+
+    @keyframes glitch-1 {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 1px); }
+      40% { transform: translate(2px, -1px); }
+      60% { transform: translate(-1px, 2px); }
+      80% { transform: translate(1px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    @keyframes glitch-2 {
+      0% { transform: translate(0); }
+      20% { transform: translate(2px, -1px); }
+      40% { transform: translate(-2px, 1px); }
+      60% { transform: translate(1px, -2px); }
+      80% { transform: translate(-1px, 2px); }
+      100% { transform: translate(0); }
+    }
+
+    .bio {
+      color: var(--color-text);
+      line-height: 1.8;
+      max-width: 600px;
+      margin-bottom: 32px;
+    }
+
+    .icons {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 16px;
     }
-    .nav-links a {
-      padding: 8px 16px;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      font-weight: 500;
-      transition: all var(--transition-fast);
+
+    .icons a {
+      color: var(--color-text-muted);
+      transition: color var(--transition-fast);
     }
-    .nav-links a:hover {
-      border-color: var(--color-accent);
-      background: var(--color-bg-subtle);
+
+    .icons a:hover {
+      color: var(--color-accent-hover);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1rem;
+      }
+      .name {
+        animation: typing 0.8s steps(9) forwards;
+      }
+      @keyframes typing {
+        from { width: 0; }
+        to { width: 9ch; }
+      }
     }
   </style>
 </BaseLayout>

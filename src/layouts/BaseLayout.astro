@@ -5,10 +5,10 @@ const {
 } = Astro.props;
 
 const nav = [
-  { href: "/", label: "Home" },
-  { href: "/cv", label: "CV" },
-  { href: "/projects", label: "Projects" },
-  { href: "/blog", label: "Blog" },
+  { href: "/", label: "home" },
+  { href: "/cv", label: "cv" },
+  { href: "/projects", label: "projects" },
+  { href: "/blog", label: "blog" },
 ];
 ---
 
@@ -19,6 +19,11 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+
+    <!-- Google Fonts: Pixel font for headings only -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-P51K4GPK7K"></script>
@@ -31,11 +36,16 @@ const nav = [
   </head>
 
   <body>
+    <!-- CRT Scanlines Overlay -->
+    <div class="scanlines"></div>
+
     <header class="container">
-      <a class="brand" href="/">Efe Güçlü</a>
+      <a class="brand" href="/">
+        <span class="prompt">guest@efe:~$</span>
+      </a>
       <nav class="nav">
         {nav.map((item) => (
-          <a href={item.href}>{item.label}</a>
+          <a href={item.href}>[{item.label}]</a>
         ))}
       </nav>
     </header>
@@ -45,91 +55,209 @@ const nav = [
     </main>
 
     <footer class="container footer">
-      <small>© {new Date().getFullYear()} Efe Güçlü. All rights reserved.</small>
+      <small>// {new Date().getFullYear()} Efe Güçlü | system uptime: stable</small>
     </footer>
 
     <style>
+      /* ========== CRT TERMINAL THEME ========== */
       :global(:root) {
-        --color-text: #1a1a1a;
-        --color-text-muted: #6b7280;
-        --color-text-subtle: #9ca3af;
-        --color-accent: #2563eb;
-        --color-accent-hover: #1d4ed8;
-        --color-border: #e5e7eb;
-        --color-border-hover: #d1d5db;
-        --color-bg: #ffffff;
-        --color-bg-subtle: #f9fafb;
-        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        /* Amber CRT Colors - Improved contrast */
+        --color-bg: #0d0d0d;
+        --color-bg-subtle: #161616;
+        --color-bg-card: #111111;
+        --color-text: #f0d090;
+        --color-text-muted: #c9a866;
+        --color-text-subtle: #8a7444;
+        --color-accent: #ffa033;
+        --color-accent-hover: #ffcc00;
+        --color-border: #3d2f1a;
+        --color-border-hover: #5a4528;
+        --color-glow: rgba(255, 176, 0, 0.3);
+        --color-glow-subtle: rgba(255, 176, 0, 0.1);
+
+        /* Shadows & Transitions */
+        --shadow-glow: 0 0 15px rgba(255, 176, 0, 0.08);
         --transition-fast: 0.15s ease;
-        --transition-normal: 0.2s ease;
+        --transition-normal: 0.25s ease;
+
+        /* Fonts - More readable */
+        --font-pixel: 'Press Start 2P', monospace;
+        --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
       }
+
+      :global(*) {
+        box-sizing: border-box;
+      }
+
       :global(body) {
         margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        line-height: 1.6;
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        line-height: 1.7;
         color: var(--color-text);
         background: var(--color-bg);
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
+
       :global(a) {
         color: var(--color-accent);
         text-decoration: none;
-        transition: color var(--transition-fast);
+        transition: color var(--transition-fast), text-shadow var(--transition-fast);
       }
+
       :global(a:hover) {
         color: var(--color-accent-hover);
+        text-shadow: 0 0 12px var(--color-glow);
       }
+
       :global(::selection) {
         background: var(--color-accent);
-        color: white;
+        color: var(--color-bg);
+        text-shadow: none;
       }
-      .container { max-width: 980px; margin: 0 auto; padding: 20px; }
+
+      :global(h1) {
+        font-family: var(--font-pixel);
+        font-size: 1rem;
+        line-height: 1.8;
+        letter-spacing: 1px;
+      }
+
+      :global(h2) {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        line-height: 1.5;
+        font-weight: 600;
+      }
+
+      :global(h3) {
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        line-height: 1.5;
+        font-weight: 600;
+      }
+
+      /* Scanlines Overlay - Very subtle */
+      .scanlines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.03),
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        opacity: 0.5;
+      }
+
+      /* Blinking Cursor Animation */
+      :global(.cursor) {
+        display: inline-block;
+        width: 0.6em;
+        height: 1.1em;
+        background: var(--color-text);
+        animation: blink 1s step-end infinite;
+        vertical-align: text-bottom;
+        margin-left: 2px;
+        box-shadow: 0 0 8px var(--color-glow);
+      }
+
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+
+      /* Layout */
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* Header */
       header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px dashed var(--color-border);
         padding-bottom: 16px;
+        margin-bottom: 10px;
       }
+
       .brand {
-        font-weight: 700;
+        font-family: var(--font-mono);
+        font-size: 0.95rem;
         text-decoration: none;
         color: var(--color-text);
-        transition: opacity var(--transition-fast);
-      }
-      .brand:hover {
-        opacity: 0.7;
-      }
-      .nav { display: flex; gap: 20px; }
-      .nav a {
-        text-decoration: none;
-        color: var(--color-text-muted);
-        font-weight: 500;
-        position: relative;
-        padding: 4px 0;
         transition: color var(--transition-fast);
       }
-      .nav a::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: var(--color-accent);
-        transition: width var(--transition-normal);
+
+      .brand:hover {
+        color: var(--color-accent-hover);
       }
+
+      .prompt {
+        color: var(--color-text-muted);
+      }
+
+      /* Navigation */
+      .nav {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .nav a {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+        padding: 4px 8px;
+        border: 1px solid transparent;
+        transition: all var(--transition-fast);
+      }
+
       .nav a:hover {
-        color: var(--color-text);
+        color: var(--color-accent-hover);
+        border-color: var(--color-border-hover);
+        background: var(--color-bg-subtle);
       }
-      .nav a:hover::after {
-        width: 100%;
-      }
+
+      /* Footer */
       .footer {
-        border-top: 1px solid var(--color-border);
+        border-top: 1px dashed var(--color-border);
         color: var(--color-text-subtle);
-        margin-top: 40px;
+        margin-top: 60px;
+        padding-top: 20px;
+        font-size: 1rem;
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 600px) {
+        header {
+          flex-direction: column;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .nav {
+          gap: 8px;
+        }
+        .nav a {
+          font-size: 1rem;
+          padding: 2px 6px;
+        }
+        :global(h1) {
+          font-size: 0.9rem;
+        }
+        :global(h2) {
+          font-size: 0.75rem;
+        }
       }
     </style>
   </body>
