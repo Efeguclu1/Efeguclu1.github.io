@@ -17,16 +17,57 @@ try {
   <p>Notes on security, Linux, cloud, and OverTheWire write-ups.</p>
 
   {posts.length === 0 ? (
-    <p><em>No posts yet. Add a markdown file under <code>src/content/blog</code>.</em></p>
+    <p class="empty"><em>No posts yet. Add a markdown file under <code>src/content/blog</code>.</em></p>
   ) : (
-    <ul>
+    <div class="posts">
       {posts.map((post) => (
-        <li style="margin-bottom: 14px;">
-          <a href={`/blog/${post.slug}/`}><strong>{post.data.title}</strong></a><br />
-          <small>{post.data.pubDate.toDateString()}</small><br />
-          <span>{post.data.description}</span>
-        </li>
+        <a href={`/blog/${post.slug}/`} class="post-card">
+          <h2>{post.data.title}</h2>
+          <time>{post.data.pubDate.toDateString()}</time>
+          <p>{post.data.description}</p>
+        </a>
       ))}
-    </ul>
+    </div>
   )}
+
+  <style>
+    .posts {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .post-card {
+      display: block;
+      padding: 20px;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      text-decoration: none;
+      background: var(--color-bg);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+    }
+    .post-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+    .post-card h2 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      color: var(--color-text);
+    }
+    .post-card time {
+      font-size: 0.85rem;
+      color: var(--color-text-subtle);
+    }
+    .post-card p {
+      margin: 10px 0 0;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    .empty {
+      color: var(--color-text-muted);
+    }
+  </style>
 </BaseLayout>

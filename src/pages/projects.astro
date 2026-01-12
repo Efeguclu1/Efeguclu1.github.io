@@ -88,13 +88,56 @@ const projects = [
   </div>
 
   <style>
-    .grid { display: grid; gap: 16px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
-    .meta { opacity: 0.75; margin-top: -6px; }
-    h2 { margin-bottom: 6px; }
-    h3 { margin-top: 14px; margin-bottom: 6px; font-size: 1rem; }
-    .stack { margin-top: 10px; opacity: 0.9; }
-    .links a { text-decoration: none; }
-    .links a:hover { text-decoration: underline; }
+    .grid { display: grid; gap: 20px; }
+    .card {
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 20px;
+      background: var(--color-bg);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+    }
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+    .meta {
+      color: var(--color-text-muted);
+      margin-top: -4px;
+      font-size: 0.9rem;
+    }
+    h2 {
+      margin-bottom: 6px;
+      color: var(--color-text);
+    }
+    h3 {
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    ul {
+      padding-left: 20px;
+      color: var(--color-text);
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    .stack {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--color-border);
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+    .stack strong {
+      color: var(--color-text);
+    }
+    .links a {
+      font-weight: 500;
+    }
   </style>
 </BaseLayout>

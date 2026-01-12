@@ -27,25 +27,55 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     systems work, building small automations, and contributing to open source.
   </p>
 
-  <p>
-    <a href="/projects">Projects</a> ·
-    <a href="/blog">Blog</a> ·
+  <div class="nav-links">
+    <a href="/projects">Projects</a>
+    <a href="/blog">Blog</a>
     <a href="/cv">CV</a>
-  </p>
+  </div>
 
   <style>
+    h1 {
+      margin-bottom: 8px;
+    }
+    p {
+      color: var(--color-text);
+      margin-bottom: 16px;
+    }
     .contact-icons {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      margin: 12px 0 20px;
+      margin: 12px 0 24px;
     }
     .contact-icons a {
-      color: #4b5563;
-      transition: color 0.2s;
+      color: var(--color-text-muted);
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
     }
     .contact-icons a:hover {
-      color: #000;
+      color: var(--color-accent);
+      background: var(--color-bg-subtle);
+      transform: translateY(-2px);
+    }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      padding: 8px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all var(--transition-fast);
+    }
+    .nav-links a:hover {
+      border-color: var(--color-accent);
+      background: var(--color-bg-subtle);
     }
   </style>
 </BaseLayout>
