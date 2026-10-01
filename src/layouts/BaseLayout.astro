@@ -1,4 +1,6 @@
 ---
+import { deployedAt } from "../data/build";
+
 const {
   title = "Efe Güçlü",
   description = "Personal website of Efe Güçlü",
@@ -8,8 +10,10 @@ const nav = [
   { href: "/", label: "home" },
   { href: "/cv", label: "cv" },
   { href: "/projects", label: "projects" },
-  { href: "/blog", label: "blog" },
 ];
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -19,11 +23,19 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0e0c09" />
 
-    <!-- Google Fonts: Pixel font for headings only -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+
+    <!-- Google Fonts: pixel font for display, JetBrains Mono for everything else -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-P51K4GPK7K"></script>
@@ -36,117 +48,176 @@ const nav = [
   </head>
 
   <body>
-    <!-- CRT Scanlines Overlay -->
-    <div class="scanlines"></div>
+    <a class="skip-link" href="#main">Skip to content</a>
 
-    <header class="container">
-      <a class="brand" href="/">
-        <span class="prompt">guest@efe:~$</span>
+    <!-- CRT Scanlines Overlay -->
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="container site-header">
+      <a class="brand" href="/" aria-label="Home">
+        <span class="brand-host">guest@efe</span>:<span class="brand-path">~{path === "/" ? "" : path}</span>$
       </a>
-      <nav class="nav">
+      <nav class="nav" aria-label="Main">
         {nav.map((item) => (
-          <a href={item.href}>[{item.label}]</a>
+          <a href={item.href} aria-current={path === item.href ? "page" : undefined}>
+            {item.label}
+          </a>
         ))}
       </nav>
     </header>
 
-    <main class="container">
+    <main class="container" id="main">
       <slot />
     </main>
 
-    <footer class="container footer">
-      <small>// {new Date().getFullYear()} Efe Güçlü | system uptime: stable</small>
+    <footer class="container site-footer">
+      <small>
+        // {new Date().getFullYear()} Efe Güçlü | system uptime:
+        <span class="uptime" data-since={deployedAt} title="Since the last deploy">stable</span>
+      </small>
+      <small class="footer-links">
+        <a href="mailto:efeguclu3435@gmail.com">email</a>
+        <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer">github</a>
+        <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer">linkedin</a>
+      </small>
     </footer>
 
-    <style>
+    <script>
+      // Without JS the footer keeps saying "stable".
+      const uptime = document.querySelector<HTMLElement>(".uptime");
+      const since = new Date(uptime?.dataset.since ?? "").getTime();
+
+      if (uptime && !Number.isNaN(since)) {
+        const tick = () => {
+          const mins = Math.max(0, Math.floor((Date.now() - since) / 60000));
+          const d = Math.floor(mins / 1440);
+          const h = Math.floor((mins % 1440) / 60);
+          const m = mins % 60;
+          uptime.textContent = d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+        };
+        tick();
+        setInterval(tick, 60000);
+      }
+    </script>
+
+    <style is:global>
       /* ========== CRT TERMINAL THEME ========== */
-      :global(:root) {
-        /* Amber CRT Colors - Improved contrast */
-        --color-bg: #0d0d0d;
-        --color-bg-subtle: #161616;
-        --color-bg-card: #111111;
+      :root {
+        /* Amber CRT colors, all tinted warm */
+        --color-bg: #0e0c09;
+        --color-bg-subtle: #17130c;
         --color-text: #f0d090;
         --color-text-muted: #c9a866;
-        --color-text-subtle: #8a7444;
+        --color-text-subtle: #9a8250;
         --color-accent: #ffa033;
-        --color-accent-hover: #ffcc00;
+        --color-accent-hover: #ffc457;
         --color-border: #3d2f1a;
         --color-border-hover: #5a4528;
         --color-glow: rgba(255, 176, 0, 0.3);
-        --color-glow-subtle: rgba(255, 176, 0, 0.1);
 
-        /* Shadows & Transitions */
-        --shadow-glow: 0 0 15px rgba(255, 176, 0, 0.08);
         --transition-fast: 0.15s ease;
         --transition-normal: 0.25s ease;
 
-        /* Fonts - More readable */
         --font-pixel: 'Press Start 2P', monospace;
-        --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+        --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+        --date-col: 11rem;
+        --z-overlay: 100;
       }
 
-      :global(*) {
+      * {
         box-sizing: border-box;
       }
 
-      :global(body) {
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 24px;
+        /* Full-bleed backgrounds are 100vw wide, which includes the scrollbar */
+        overflow-x: clip;
+      }
+
+      .print-only {
+        display: none;
+      }
+
+      body {
         margin: 0;
+        min-height: 100dvh;
         font-family: var(--font-mono);
-        font-size: 1rem;
+        font-size: 0.95rem;
         line-height: 1.7;
         color: var(--color-text);
-        background: var(--color-bg);
+        background-color: var(--color-bg);
+        /* Faint tube glow from the top of the screen */
+        background-image: radial-gradient(
+          ellipse 90% 420px at 50% -80px,
+          rgba(255, 160, 51, 0.09),
+          transparent
+        );
+        background-repeat: no-repeat;
+        font-variant-numeric: tabular-nums;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
 
-      :global(a) {
+      a {
         color: var(--color-accent);
         text-decoration: none;
         transition: color var(--transition-fast), text-shadow var(--transition-fast);
       }
 
-      :global(a:hover) {
+      a:hover {
         color: var(--color-accent-hover);
         text-shadow: 0 0 12px var(--color-glow);
       }
 
-      :global(::selection) {
+      :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 3px;
+      }
+
+      ::selection {
         background: var(--color-accent);
         color: var(--color-bg);
         text-shadow: none;
       }
 
-      :global(h1) {
+      h1, h2, h3, p {
+        margin: 0;
+      }
+
+      h1 {
         font-family: var(--font-pixel);
-        font-size: 1rem;
-        line-height: 1.8;
-        letter-spacing: 1px;
+        font-size: clamp(1.05rem, 3.2vw, 1.5rem);
+        font-weight: 400;
+        line-height: 1.6;
+        color: var(--color-accent-hover);
+        text-wrap: balance;
       }
 
-      :global(h2) {
-        font-family: var(--font-mono);
-        font-size: 1.1rem;
+      h2 {
+        font-size: 0.9rem;
+        font-weight: 500;
         line-height: 1.5;
-        font-weight: 600;
       }
 
-      :global(h3) {
-        font-family: var(--font-mono);
+      h3 {
         font-size: 1rem;
-        line-height: 1.5;
         font-weight: 600;
+        line-height: 1.5;
+        text-wrap: balance;
       }
 
-      /* Scanlines Overlay - Very subtle */
+      p, li {
+        text-wrap: pretty;
+      }
+
+      /* Scanlines overlay, very subtle */
       .scanlines {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0;
         pointer-events: none;
-        z-index: 9999;
+        z-index: var(--z-overlay);
         background: repeating-linear-gradient(
           0deg,
           rgba(0, 0, 0, 0.03),
@@ -157,15 +228,30 @@ const nav = [
         opacity: 0.5;
       }
 
-      /* Blinking Cursor Animation */
-      :global(.cursor) {
+      .skip-link {
+        position: absolute;
+        left: 16px;
+        top: -60px;
+        z-index: calc(var(--z-overlay) + 1);
+        padding: 8px 12px;
+        background: var(--color-accent);
+        color: var(--color-bg);
+      }
+
+      .skip-link:focus {
+        top: 16px;
+        color: var(--color-bg);
+      }
+
+      /* Blinking cursor */
+      .cursor {
         display: inline-block;
         width: 0.6em;
         height: 1.1em;
         background: var(--color-text);
         animation: blink 1s step-end infinite;
         vertical-align: text-bottom;
-        margin-left: 2px;
+        margin-left: 6px;
         box-shadow: 0 0 8px var(--color-glow);
       }
 
@@ -176,87 +262,383 @@ const nav = [
 
       /* Layout */
       .container {
-        max-width: 900px;
+        max-width: 920px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 20px 24px;
       }
 
-      /* Header */
-      header {
+      .site-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
         border-bottom: 1px dashed var(--color-border);
+        padding-top: 24px;
         padding-bottom: 16px;
-        margin-bottom: 10px;
       }
 
       .brand {
-        font-family: var(--font-mono);
-        font-size: 0.95rem;
-        text-decoration: none;
-        color: var(--color-text);
-        transition: color var(--transition-fast);
-      }
-
-      .brand:hover {
-        color: var(--color-accent-hover);
-      }
-
-      .prompt {
+        font-size: 0.9rem;
         color: var(--color-text-muted);
       }
 
-      /* Navigation */
+      .brand-path {
+        color: var(--color-accent);
+      }
+
       .nav {
         display: flex;
-        gap: 12px;
+        gap: 4px;
         flex-wrap: wrap;
       }
 
       .nav a {
-        font-family: var(--font-mono);
         font-size: 0.9rem;
         color: var(--color-text-muted);
-        padding: 4px 8px;
+        padding: 4px 10px;
         border: 1px solid transparent;
-        transition: all var(--transition-fast);
+        transition: color var(--transition-fast), border-color var(--transition-fast),
+          background-color var(--transition-fast);
       }
 
+      .nav a::before { content: "["; color: var(--color-text-subtle); }
+      .nav a::after { content: "]"; color: var(--color-text-subtle); }
+
       .nav a:hover {
+        color: var(--color-accent-hover);
+        background: var(--color-bg-subtle);
+      }
+
+      .nav a:active {
+        transform: translateY(1px);
+      }
+
+      .nav a[aria-current="page"] {
         color: var(--color-accent-hover);
         border-color: var(--color-border-hover);
         background: var(--color-bg-subtle);
       }
 
-      /* Footer */
-      .footer {
+      .site-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px 24px;
         border-top: 1px dashed var(--color-border);
         color: var(--color-text-subtle);
-        margin-top: 60px;
+        margin-top: 72px;
         padding-top: 20px;
-        font-size: 1rem;
+        padding-bottom: 40px;
       }
 
-      /* Mobile Responsive */
-      @media (max-width: 600px) {
-        header {
+      .footer-links {
+        display: flex;
+        gap: 16px;
+      }
+
+      .footer-links a {
+        color: var(--color-text-muted);
+      }
+
+      /* ========== SHARED PAGE PIECES ========== */
+      .page {
+        padding: 36px 0 0;
+      }
+
+      /* A line "typed" at the prompt, used above titles and sections */
+      .cmd {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 10px;
+      }
+
+      .cmd::before {
+        content: "$ ";
+        color: var(--color-text-subtle);
+      }
+
+      .lede {
+        color: var(--color-text-muted);
+        max-width: 62ch;
+        margin-top: 16px;
+      }
+
+      .section {
+        margin-top: 56px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--color-accent);
+        margin-bottom: 8px;
+      }
+
+      .section-title::before {
+        content: "##";
+        color: var(--color-text-subtle);
+        margin-right: -6px;
+      }
+
+      .section-title::after {
+        content: "";
+        flex: 1;
+        border-top: 1px dashed var(--color-border);
+      }
+
+      /* Date on the left, content on the right */
+      .entry {
+        display: grid;
+        grid-template-columns: var(--date-col) minmax(0, 1fr);
+        gap: 4px 32px;
+        padding: 20px 0;
+      }
+
+      .entry + .entry {
+        border-top: 1px solid var(--color-bg-subtle);
+      }
+
+      .entry-date {
+        color: var(--color-text-subtle);
+        font-size: 0.85rem;
+        padding-top: 2px;
+      }
+
+      .entry-date span {
+        display: block;
+      }
+
+      .entry-role {
+        color: var(--color-text-muted);
+        margin-top: 2px;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-bg);
+        background: var(--color-accent);
+        padding: 0 6px;
+        margin-left: 8px;
+        vertical-align: 2px;
+      }
+
+      .bullets {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0 0;
+        max-width: 68ch;
+      }
+
+      .bullets li {
+        color: var(--color-text-muted);
+        padding: 4px 0 4px 18px;
+        position: relative;
+        line-height: 1.65;
+      }
+
+      .bullets li::before {
+        content: ">";
+        position: absolute;
+        left: 0;
+        color: var(--color-text-subtle);
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .tags li {
+        color: var(--color-text-muted);
+        background: var(--color-bg-subtle);
+        border: 1px solid var(--color-border);
+        padding: 1px 8px;
+        font-size: 0.8rem;
+      }
+
+      .more {
+        display: inline-block;
+        margin-top: 12px;
+        font-size: 0.9rem;
+      }
+
+      .more::after {
+        content: " ->";
+        display: inline-block;
+        white-space: pre;
+        transition: transform var(--transition-fast);
+      }
+
+      .more:hover::after {
+        transform: translateX(4px);
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+        .site-header {
           flex-direction: column;
-          gap: 12px;
           align-items: flex-start;
+          gap: 10px;
         }
-        .nav {
-          gap: 8px;
+        .entry {
+          grid-template-columns: minmax(0, 1fr);
         }
-        .nav a {
+        .entry-date span {
+          display: inline;
+        }
+        .entry-date span + span::before {
+          content: " · ";
+        }
+      }
+
+      /* ========== PRINT: plain paper version ========== */
+      @media print {
+        @page {
+          margin: 14mm 16mm;
+        }
+
+        :root {
+          --date-col: 8.5rem;
+        }
+
+        html {
+          font-size: 9.5pt;
+        }
+
+        body {
+          background: #fff;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           font-size: 1rem;
-          padding: 2px 6px;
+          line-height: 1.4;
         }
-        :global(h1) {
+
+        * {
+          color: #111 !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+        }
+
+        .scanlines,
+        .skip-link,
+        .site-header,
+        .site-footer,
+        .cmd,
+        .badge,
+        .more,
+        .term,
+        .screen-only {
+          display: none !important;
+        }
+
+        .print-only {
+          display: inline;
+        }
+
+        .container {
+          max-width: none;
+          padding: 0;
+        }
+
+        .page {
+          padding: 0;
+        }
+
+        h1 {
+          font-family: inherit;
+          font-size: 2rem;
+          font-weight: 700;
+          line-height: 1.2;
+        }
+
+        .section {
+          margin-top: 1.3rem;
+        }
+
+        .section-title {
+          display: block;
+          font-size: 1.1rem;
+          font-weight: 700;
+          text-transform: capitalize;
+          border-bottom: 0.75pt solid #111;
+          padding-bottom: 2pt;
+          margin-bottom: 3pt;
+          break-after: avoid;
+        }
+
+        .section-title::before,
+        .section-title::after {
+          display: none;
+        }
+
+        .entry {
+          gap: 0 1.2rem;
+          padding: 0.45rem 0;
+          break-inside: avoid;
+        }
+
+        .entry + .entry {
+          border-top: 0;
+        }
+
+        .entry-date,
+        .entry-role {
+          color: #444 !important;
+        }
+
+        .entry-date {
           font-size: 0.9rem;
+          padding-top: 1pt;
         }
-        :global(h2) {
-          font-size: 0.75rem;
+
+        .bullets {
+          max-width: none;
+          margin-top: 0.25rem;
+        }
+
+        .bullets li {
+          padding: 1pt 0 1pt 0.9rem;
+          line-height: 1.4;
+        }
+
+        .bullets li::before {
+          content: "•";
+          color: #444;
+        }
+
+        .tags {
+          gap: 0 0.35rem;
+        }
+
+        .tags li {
+          border: 0;
+          background: none;
+          padding: 0;
+          font-size: 1rem;
+        }
+
+        .tags li:not(:last-child)::after {
+          content: ",";
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
         }
       }
     </style>

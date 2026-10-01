@@ -1,0 +1,441 @@
+---
+// A small working shell over the resume data. All output is written with
+// textContent, so nothing the visitor types is ever parsed as HTML.
+const { commits = [] } = Astro.props;
+---
+
+<section class="term" aria-label="Interactive terminal" data-commits={JSON.stringify(commits)}>
+  <div class="term-log" role="log"></div>
+  <form class="term-line">
+    <label class="term-prompt" for="term-input">guest@efe:<span class="term-cwd">~</span>$</label>
+    <input
+      id="term-input"
+      type="text"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      enterkeyhint="go"
+      aria-describedby="term-hint"
+    />
+  </form>
+  <p class="term-hint" id="term-hint">
+    this prompt is live. type <button type="button" data-run="help">help</button> and press enter.
+  </p>
+</section>
+
+<script>
+  import type { Commit } from "../data/github";
+  import { profile, education, experience, projects, skills } from "../data/resume";
+
+  type Seg = string | { t: string; href: string };
+  type Line = Seg | Seg[];
+  type File = () => Line[];
+  interface Dir {
+    [name: string]: Dir | File;
+  }
+
+  const term = document.querySelector<HTMLElement>(".term");
+  const log = term?.querySelector<HTMLElement>(".term-log");
+  const form = term?.querySelector<HTMLFormElement>(".term-line");
+  const input = term?.querySelector<HTMLInputElement>("#term-input");
+  const cwdLabel = term?.querySelector<HTMLElement>(".term-cwd");
+
+  if (term && log && form && input && cwdLabel) {
+    const link = (t: string, href: string) => ({ t, href });
+    const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "");
+    const slug = (s: string) =>
+      s
+        .split(",")[0]
+        .toLowerCase()
+        .replace(/ı/g, "i")
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+    const current = experience.find((job) => job.current);
+    const commits: Commit[] = JSON.parse(term.dataset.commits ?? "[]");
+
+    const fs: Dir = {
+      "now.txt": () =>
+        current ? [current.org, current.role, "", current.points[0]] : ["nothing right now."],
+      "cv.md": () => [
+        `# ${profile.name}`,
+        profile.location,
+        "",
+        "## education",
+        ...education.map((e) => `${e.date.padEnd(22)}${e.school}, ${e.detail}`),
+        "",
+        "## experience",
+        ...experience.map((j) => `${j.date.padEnd(22)}${j.org}: ${j.role}`),
+        "",
+        ["full version: ", link("open cv", "/cv")],
+      ],
+      "contact.txt": () => [
+        ["email     ", link(profile.email, `mailto:${profile.email}`)],
+        ["github    ", link(bare(profile.github), profile.github)],
+        ["linkedin  ", link(bare(profile.linkedin), profile.linkedin)],
+      ],
+      "skills.txt": () => skills.map((s) => `${s.group.padEnd(22)}${s.items.join(", ")}`),
+      experience: Object.fromEntries(
+        experience.map((j) => [
+          `${slug(j.org)}.txt`,
+          () => [j.org, `${j.role} (${j.date})`, "", ...j.points.map((p) => `> ${p}`)],
+        ]),
+      ),
+      projects: Object.fromEntries(
+        projects.map((p) => [
+          `${p.slug}.txt`,
+          () => [
+            p.name,
+            p.date,
+            "",
+            p.summary,
+            ...p.points.map((x) => `> ${x}`),
+            "",
+            `stack: ${p.stack.join(", ")}`,
+          ],
+        ]),
+      ),
+    };
+
+    const targets: Record<string, string> = {
+      home: "/",
+      cv: "/cv",
+      projects: "/projects",
+      github: profile.github,
+      linkedin: profile.linkedin,
+      email: `mailto:${profile.email}`,
+    };
+
+    let cwd: string[] = [];
+    const history: string[] = [];
+    let cursor = 0;
+
+    const isDir = (node: Dir | File): node is Dir => typeof node !== "function";
+    const here = () => "~" + (cwd.length ? "/" + cwd.join("/") : "");
+
+    function resolve(path: string) {
+      const parts = /^[~/]/.test(path) ? [] : [...cwd];
+      for (const seg of path.replace(/^~/, "").split("/")) {
+        if (!seg || seg === ".") continue;
+        if (seg === "..") parts.pop();
+        else parts.push(seg);
+      }
+      let node: Dir | File = fs;
+      for (const part of parts) {
+        if (!isDir(node) || !Object.hasOwn(node, part)) return null;
+        node = node[part];
+      }
+      return { node, parts };
+    }
+
+    function print(line: Line, cls = "term-out") {
+      const row = document.createElement("div");
+      row.className = cls;
+      for (const seg of Array.isArray(line) ? line : [line]) {
+        if (typeof seg === "string") {
+          row.append(seg);
+        } else {
+          const a = document.createElement("a");
+          a.textContent = seg.t;
+          a.href = seg.href;
+          if (seg.href.startsWith("http")) {
+            a.target = "_blank";
+            a.rel = "noreferrer";
+          }
+          row.append(a);
+        }
+      }
+      if (!row.textContent) row.append(" ");
+      log!.append(row);
+    }
+
+    const names = (dir: Dir) =>
+      Object.keys(dir).map((name) => (isDir(dir[name]) ? name + "/" : name));
+
+    const commands: Record<string, (args: string[]) => void> = {
+      help() {
+        [
+          "ls [dir]        list files",
+          "cd <dir>        change directory",
+          "cat <file>      print a file",
+          "open <target>   " + Object.keys(targets).join(", "),
+          "git log         recent commits on github",
+          "whoami  pwd  history  neofetch  clear",
+          "",
+          "tab completes, up/down recalls. not every command is listed.",
+        ].forEach((line) => print(line));
+      },
+      ls(args) {
+        const found = resolve(args[0] ?? ".");
+        if (!found) return print(`ls: ${args[0]}: no such file or directory`);
+        print(isDir(found.node) ? names(found.node).join("  ") : found.parts.at(-1)!);
+      },
+      cd(args) {
+        if (!args[0]) cwd = [];
+        else {
+          const found = resolve(args[0]);
+          if (!found) {
+            const hint = args[0] in targets ? ` (try: open ${args[0]})` : "";
+            return print(`cd: no such directory: ${args[0]}${hint}`);
+          }
+          if (!isDir(found.node)) return print(`cd: not a directory: ${args[0]}`);
+          cwd = found.parts;
+        }
+        cwdLabel!.textContent = here();
+      },
+      cat(args) {
+        if (!args.length) return print("usage: cat <file>");
+        for (const arg of args) {
+          const found = resolve(arg);
+          if (!found) print(`cat: ${arg}: no such file or directory`);
+          else if (isDir(found.node)) print(`cat: ${arg}: is a directory`);
+          else found.node().forEach((line) => print(line));
+        }
+      },
+      open(args) {
+        const url = targets[args[0]];
+        if (!url) return print("usage: open <" + Object.keys(targets).join("|") + ">");
+        print(`opening ${args[0]}...`);
+        if (url.startsWith("http")) window.open(url, "_blank", "noopener");
+        else window.location.href = url;
+      },
+      git(args) {
+        if (args[0] !== "log") return print("git: only 'git log' works here.");
+        if (!commits.length) return print("git log: nothing fetched at build time.");
+        for (const commit of commits) {
+          print([`${commit.sha}  ${commit.date}  `, link(commit.repo, commit.url)]);
+          print(`    ${commit.message}`);
+        }
+      },
+      whoami() {
+        print(profile.name);
+      },
+      pwd() {
+        print(here());
+      },
+      history() {
+        history.forEach((entry, i) => print(`${String(i + 1).padStart(3)}  ${entry}`));
+      },
+      clear() {
+        log!.replaceChildren();
+      },
+      echo(args) {
+        print(args.join(" "));
+      },
+      date() {
+        print(new Date().toString());
+      },
+      neofetch() {
+        [
+          "guest@efe",
+          "---------",
+          "os        amber-crt",
+          `host      ${profile.location}`,
+          `now       ${current ? current.org : "idle"}`,
+          `langs     ${skills[0].items.join(", ")}`,
+          "uptime    stable",
+        ].forEach((line) => print(line));
+      },
+      sudo(args) {
+        if (args.join(" ") === "hire efe") {
+          print(["access granted. start here: ", link(profile.email, `mailto:${profile.email}`)]);
+        } else {
+          print("guest is not in the sudoers file. this incident will be reported.");
+        }
+      },
+      rm() {
+        print("rm: permission denied. nice try.");
+      },
+      vim() {
+        print("vim: refusing to start. you would never get out.");
+      },
+      exit() {
+        print("logout: there is nowhere else to go.");
+      },
+    };
+
+    function run(raw: string) {
+      const text = raw.trim();
+      print(`guest@efe:${here()}$ ${text}`, "term-out term-echo");
+      if (text) {
+        history.push(text);
+        const [name, ...args] = text.split(/\s+/);
+        if (Object.hasOwn(commands, name)) commands[name](args);
+        else print(`${name}: command not found. type help.`);
+      }
+      cursor = history.length;
+      log!.scrollTop = log!.scrollHeight;
+      input!.scrollIntoView({ block: "nearest" });
+    }
+
+    function complete() {
+      const value = input!.value;
+      const lastSpace = value.lastIndexOf(" ");
+      const head = value.slice(0, lastSpace + 1);
+      const token = value.slice(lastSpace + 1);
+
+      let base = "";
+      let options: string[];
+      if (lastSpace === -1) {
+        options = Object.keys(commands);
+      } else if (head.trim() === "open") {
+        options = Object.keys(targets);
+      } else {
+        const slash = token.lastIndexOf("/");
+        base = token.slice(0, slash + 1);
+        const found = resolve(base || ".");
+        options = found && isDir(found.node) ? names(found.node) : [];
+      }
+
+      const prefix = token.slice(base.length);
+      const matches = options.filter((option) => option.startsWith(prefix));
+      if (!matches.length) return;
+
+      let common = matches[0];
+      for (const match of matches) {
+        while (!match.startsWith(common)) common = common.slice(0, -1);
+      }
+      if (matches.length > 1 && common === prefix) print(matches.join("  "));
+      const done = matches.length === 1 && !common.endsWith("/") ? " " : "";
+      input!.value = head + base + common + done;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      run(input.value);
+      input.value = "";
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        event.preventDefault();
+        cursor = Math.max(0, Math.min(history.length, cursor + (event.key === "ArrowUp" ? -1 : 1)));
+        input.value = history[cursor] ?? "";
+      } else if (event.key === "Tab" && input.value) {
+        // An empty prompt lets Tab move focus on, so keyboard users are never trapped.
+        event.preventDefault();
+        complete();
+      } else if (event.key === "l" && event.ctrlKey) {
+        event.preventDefault();
+        commands.clear([]);
+      } else if (event.key === "c" && event.ctrlKey && input.selectionStart === input.selectionEnd) {
+        print(`guest@efe:${here()}$ ${input.value}^C`, "term-out term-echo");
+        input.value = "";
+      }
+    });
+
+    term.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>("[data-run]");
+      if (button) run(button.dataset.run!);
+      else if (target.closest("a") || window.getSelection()?.toString()) return;
+      input.focus({ preventScroll: true });
+    });
+  }
+</script>
+
+<style is:global>
+  .term {
+    margin-top: 36px;
+    padding: 14px 16px;
+    border: 1px solid var(--color-border);
+    background: rgba(14, 12, 9, 0.78);
+    cursor: text;
+    transition: border-color var(--transition-fast);
+  }
+
+  .term:focus-within {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 0 24px rgba(255, 160, 51, 0.06);
+  }
+
+  .term-log {
+    max-height: 22rem;
+    overflow-y: auto;
+    margin-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .term-log:empty {
+    display: none;
+  }
+
+  .term-out {
+    color: var(--color-text-muted);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .term-echo {
+    color: var(--color-text);
+    margin-top: 6px;
+  }
+
+  .term-echo:first-child {
+    margin-top: 0;
+  }
+
+  .term-line {
+    display: flex;
+    align-items: baseline;
+    gap: 1ch;
+  }
+
+  .term-prompt {
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .term-cwd {
+    color: var(--color-accent);
+  }
+
+  .term input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: inherit;
+    color: var(--color-text);
+    caret-color: var(--color-accent);
+    caret-shape: block;
+  }
+
+  .term-hint {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--color-text-subtle);
+  }
+
+  .term-hint button {
+    padding: 0 6px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    font: inherit;
+    color: var(--color-accent);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .term-hint button:hover {
+    color: var(--color-accent-hover);
+    border-color: var(--color-border-hover);
+  }
+
+  .term-hint button:active {
+    transform: translateY(1px);
+  }
+
+  @media (max-width: 640px) {
+    /* 16px keeps iOS from zooming the page when the prompt gets focus */
+    .term input {
+      font-size: 16px;
+    }
+  }
+</style>

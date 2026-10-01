@@ -1,0 +1,305 @@
+---
+// Background for the home hero: drifting UAV nodes that link up when in range,
+// with packets forwarded by greedy routing (each hop goes to the neighbour
+// closest to the destination; no closer neighbour means the packet is dropped).
+---
+
+<div class="net" aria-hidden="true"><canvas></canvas></div>
+<a class="net-caption" href="/projects#thz-drone-networks">
+  sim: greedy routing<span class="net-stats"></span>
+</a>
+
+<script>
+  const root = document.querySelector<HTMLElement>(".net");
+  const canvas = root?.querySelector("canvas");
+  const statsLabel = document.querySelector<HTMLElement>(".net-stats");
+  const ctx = canvas?.getContext("2d");
+
+  if (root && canvas && ctx) {
+    type Uav = { x: number; y: number; vx: number; vy: number; pulse: number; lost: number };
+    type Packet = { at: number; next: number; dst: number; t: number; trail: number[] };
+
+    const HOP_SECONDS = 0.45;
+    const MAX_HOPS = 14;
+    const PAD = 24;
+    const amber = (alpha: number) => `rgba(255, 176, 77, ${alpha})`;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let width = 0;
+    let height = 0;
+    let range = 180;
+    let uavs: Uav[] = [];
+    let packet: Packet | null = null;
+    let cooldown = 1.2;
+    let delivered = 0;
+    let dropped = 0;
+
+    const rand = (min: number, max: number) => min + Math.random() * (max - min);
+    const dist = (a: Uav, b: Uav) => Math.hypot(a.x - b.x, a.y - b.y);
+
+    function seed(count: number) {
+      uavs = Array.from({ length: count }, () => {
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(5, 12);
+        return {
+          x: rand(PAD, width - PAD),
+          y: rand(PAD, height - PAD),
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          pulse: 0,
+          lost: 0,
+        };
+      });
+      packet = null;
+    }
+
+    function resize() {
+      const rect = root!.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = Math.round(width * dpr);
+      canvas!.height = Math.round(height * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      range = Math.max(150, Math.min(230, width * 0.2));
+      const count = Math.round(Math.max(10, Math.min(26, (width * height) / 24000)));
+      if (count !== uavs.length) seed(count);
+      // Resizing clears the canvas, and the loop may be paused, so repaint here.
+      draw();
+    }
+
+    // Greedy forwarding: the destination if reachable, otherwise the in-range
+    // neighbour that is strictly closer to it than we are.
+    function nextHop(at: number, dst: number) {
+      if (dist(uavs[at], uavs[dst]) <= range) return dst;
+      let best = -1;
+      let bestDist = dist(uavs[at], uavs[dst]);
+      uavs.forEach((uav, i) => {
+        if (i === at || dist(uavs[at], uav) > range) return;
+        const d = dist(uav, uavs[dst]);
+        if (d < bestDist) {
+          best = i;
+          bestDist = d;
+        }
+      });
+      return best;
+    }
+
+    function report() {
+      if (statsLabel) {
+        statsLabel.textContent = ` · ${uavs.length} uavs · ${delivered} delivered · ${dropped} dropped`;
+      }
+    }
+
+    function drop(at: number) {
+      uavs[at].lost = 1;
+      dropped++;
+      packet = null;
+      cooldown = 1;
+      report();
+    }
+
+    function send() {
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const src = Math.floor(Math.random() * uavs.length);
+        const dst = Math.floor(Math.random() * uavs.length);
+        // Only multi-hop pairs are interesting to watch.
+        if (src === dst || dist(uavs[src], uavs[dst]) <= range) continue;
+        const next = nextHop(src, dst);
+        if (next === -1) return drop(src);
+        packet = { at: src, next, dst, t: 0, trail: [src] };
+        return;
+      }
+    }
+
+    function step(dt: number) {
+      for (const uav of uavs) {
+        uav.x += uav.vx * dt;
+        uav.y += uav.vy * dt;
+        if (uav.x < PAD || uav.x > width - PAD) uav.vx *= -1;
+        if (uav.y < PAD || uav.y > height - PAD) uav.vy *= -1;
+        uav.x = Math.max(PAD, Math.min(width - PAD, uav.x));
+        uav.y = Math.max(PAD, Math.min(height - PAD, uav.y));
+        uav.pulse = Math.max(0, uav.pulse - dt * 1.2);
+        uav.lost = Math.max(0, uav.lost - dt * 1.2);
+      }
+
+      if (!packet) {
+        cooldown -= dt;
+        if (cooldown <= 0) send();
+        return;
+      }
+
+      packet.t += dt / HOP_SECONDS;
+      if (packet.t < 1) return;
+
+      packet.at = packet.next;
+      packet.trail.push(packet.at);
+      packet.t = 0;
+      if (packet.at === packet.dst) {
+        uavs[packet.at].pulse = 1;
+        delivered++;
+        packet = null;
+        cooldown = 1;
+        report();
+        return;
+      }
+      const next = nextHop(packet.at, packet.dst);
+      if (next === -1 || packet.trail.length > MAX_HOPS) drop(packet.at);
+      else packet.next = next;
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, width, height);
+      ctx!.lineWidth = 1;
+
+      ctx!.setLineDash([2, 5]);
+      for (let i = 0; i < uavs.length; i++) {
+        for (let j = i + 1; j < uavs.length; j++) {
+          const d = dist(uavs[i], uavs[j]);
+          if (d > range) continue;
+          ctx!.strokeStyle = amber(0.07 + 0.32 * (1 - d / range));
+          ctx!.beginPath();
+          ctx!.moveTo(uavs[i].x, uavs[i].y);
+          ctx!.lineTo(uavs[j].x, uavs[j].y);
+          ctx!.stroke();
+        }
+      }
+      ctx!.setLineDash([]);
+
+      if (packet) {
+        const from = uavs[packet.at];
+        const to = uavs[packet.next];
+        const px = from.x + (to.x - from.x) * packet.t;
+        const py = from.y + (to.y - from.y) * packet.t;
+
+        ctx!.strokeStyle = amber(0.55);
+        ctx!.beginPath();
+        packet.trail.forEach((index, i) => {
+          if (i === 0) ctx!.moveTo(uavs[index].x, uavs[index].y);
+          else ctx!.lineTo(uavs[index].x, uavs[index].y);
+        });
+        ctx!.lineTo(px, py);
+        ctx!.stroke();
+
+        const dst = uavs[packet.dst];
+        ctx!.strokeStyle = amber(0.7);
+        ctx!.strokeRect(dst.x - 7, dst.y - 7, 14, 14);
+
+        ctx!.shadowColor = amber(0.9);
+        ctx!.shadowBlur = 12;
+        ctx!.fillStyle = amber(1);
+        ctx!.fillRect(px - 3.5, py - 3.5, 7, 7);
+        ctx!.shadowBlur = 0;
+      }
+
+      ctx!.font = "9px 'JetBrains Mono', monospace";
+      uavs.forEach((uav, i) => {
+        ctx!.fillStyle = amber(0.6);
+        ctx!.fillRect(uav.x - 2.5, uav.y - 2.5, 5, 5);
+        ctx!.fillStyle = amber(0.3);
+        ctx!.fillText("u" + String(i).padStart(2, "0"), uav.x + 7, uav.y - 6);
+
+        if (uav.pulse > 0) {
+          const size = 7 + (1 - uav.pulse) * 22;
+          ctx!.strokeStyle = amber(uav.pulse * 0.8);
+          ctx!.strokeRect(uav.x - size, uav.y - size, size * 2, size * 2);
+        }
+        if (uav.lost > 0) {
+          ctx!.strokeStyle = amber(uav.lost * 0.9);
+          ctx!.beginPath();
+          ctx!.moveTo(uav.x - 8, uav.y - 8);
+          ctx!.lineTo(uav.x + 8, uav.y + 8);
+          ctx!.moveTo(uav.x + 8, uav.y - 8);
+          ctx!.lineTo(uav.x - 8, uav.y + 8);
+          ctx!.stroke();
+        }
+      });
+    }
+
+    let visible = true;
+    let last = 0;
+    let frame = 0;
+
+    function loop(now: number) {
+      // Cap the step so a background tab does not teleport everything on return.
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      step(dt);
+      draw();
+      frame = requestAnimationFrame(loop);
+    }
+
+    function sync() {
+      cancelAnimationFrame(frame);
+      if (reduced || !visible || document.hidden) return;
+      last = performance.now();
+      frame = requestAnimationFrame(loop);
+    }
+
+    new ResizeObserver(resize).observe(root);
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    }).observe(root);
+    document.addEventListener("visibilitychange", sync);
+
+    resize();
+    report();
+    if (reduced && statsLabel) statsLabel.textContent = ` · ${uavs.length} uavs · paused`;
+    sync();
+  }
+</script>
+
+<style>
+  .net {
+    position: absolute;
+    top: -96px;
+    left: calc(50% - 50vw);
+    width: 100vw;
+    height: 700px;
+    z-index: -1;
+    pointer-events: none;
+    /* Dimmer behind the text column, fading out towards the next section */
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent),
+      linear-gradient(to right, rgba(0, 0, 0, 0.4) 22%, #000 68%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to bottom, #000 62%, transparent),
+      linear-gradient(to right, rgba(0, 0, 0, 0.4) 22%, #000 68%);
+    mask-composite: intersect;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .net-caption {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    font-size: 0.75rem;
+    color: var(--color-text-subtle);
+  }
+
+  .net-caption:hover {
+    color: var(--color-accent-hover);
+  }
+
+  @media (max-width: 860px) {
+    .net {
+      opacity: 0.45;
+    }
+    .net-caption {
+      display: none;
+    }
+  }
+
+  @media print {
+    .net,
+    .net-caption {
+      display: none;
+    }
+  }
+</style>

@@ -1,5 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  profile,
+  education,
+  experience,
+  projects,
+  skills,
+  activities,
+  languages,
+} from "../data/resume";
+
+const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "");
 ---
 
 <BaseLayout
@@ -7,142 +18,163 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="Curriculum Vitae of Efe Güçlü (Computer Science & Engineering)."
 >
   <div class="page">
-    <h1>Curriculum Vitae</h1>
+    <p class="cmd">cat cv.md</p>
+    <h1>
+      <span class="screen-only">Curriculum Vitae</span>
+      <span class="print-only">{profile.name}</span>
+    </h1>
 
     <div class="contact">
-      <span class="location">Istanbul, Turkey</span>
-      <div class="links">
-        <a href="mailto:efeguclu3435@gmail.com">email</a>
-        <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer">github</a>
-        <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer">linkedin</a>
-      </div>
+      <span>{profile.location}</span>
+      <a href={`mailto:${profile.email}`}>{profile.email}</a>
+      <a href={profile.github} target="_blank" rel="noreferrer">
+        <span class="screen-only">github</span>
+        <span class="print-only">{bare(profile.github)}</span>
+      </a>
+      <a href={profile.linkedin} target="_blank" rel="noreferrer">
+        <span class="screen-only">linkedin</span>
+        <span class="print-only">{bare(profile.linkedin)}</span>
+      </a>
     </div>
 
     <section class="section">
-      <h2>Work Experience</h2>
-
-      <div class="job">
-        <div class="job-header">
-          <strong>Logo Yazılım — Software Testing Intern</strong>
-          <span class="date">Jul 2025 – Sep 2025</span>
+      <h2 class="section-title">education</h2>
+      {education.map((item) => (
+        <div class="entry">
+          <p class="entry-date"><span>{item.date}</span><span>{item.place}</span></p>
+          <div>
+            <h3>{item.school}</h3>
+            <p class="entry-role">{item.detail}</p>
+            <ul class="bullets">
+              {item.points.map((point) => <li>{point}</li>)}
+            </ul>
+          </div>
         </div>
-        <ul>
-          <li>Worked on API testing and test automation using Apidog and Selenium.</li>
-          <li>Designed, executed, and validated automated test cases for RESTful APIs and web interfaces.</li>
-        </ul>
-      </div>
+      ))}
+    </section>
 
-      <div class="job">
-        <div class="job-header">
-          <strong>TürkTraktör — Information Technology Intern</strong>
-          <span class="date">Jul 2024 – Aug 2024 · Ankara</span>
+    <section class="section">
+      <h2 class="section-title">work experience</h2>
+      {experience.map((job) => (
+        <div class="entry">
+          <p class="entry-date"><span>{job.date}</span></p>
+          <div>
+            <h3>
+              {job.org}
+              {job.current && <span class="badge">now</span>}
+            </h3>
+            <p class="entry-role">{job.role}</p>
+            <ul class="bullets">
+              {job.points.map((point) => <li>{point}</li>)}
+            </ul>
+          </div>
         </div>
-        <ul>
-          <li>Researched and presented implementation strategies for Microsoft Copilot integration.</li>
-          <li>Explored cybersecurity concepts related to endpoint protection and secure software usage in enterprise environments.</li>
-        </ul>
-      </div>
+      ))}
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">projects</h2>
+      {projects.map((p) => (
+        <div class="entry">
+          <p class="entry-date"><span>{p.date}</span></p>
+          <div>
+            <h3><a href={`/projects#${p.slug}`}>{p.name}</a></h3>
+            {p.label && <p class="entry-role">{p.label}</p>}
+            <p class="summary">{p.summary}</p>
+          </div>
+        </div>
+      ))}
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">technical skills</h2>
+      {skills.map((skill) => (
+        <div class="entry compact">
+          <p class="entry-date"><span>{skill.group}</span></p>
+          <ul class="tags">
+            {skill.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">extracurricular activities</h2>
+      {activities.map((item) => (
+        <div class="entry">
+          <p class="entry-date"><span>{item.date}</span></p>
+          <div>
+            <h3>{item.org}</h3>
+            <p class="entry-role">{item.role}</p>
+            <ul class="bullets">
+              {item.points.map((point) => <li>{point}</li>)}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">languages</h2>
+      {languages.map((lang) => (
+        <div class="entry compact">
+          <p class="entry-date"><span>{lang.name}</span></p>
+          <p class="level">{lang.level}</p>
+        </div>
+      ))}
     </section>
   </div>
 
   <style>
-    .page {
-      padding: 20px 0;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
     .contact {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
-      align-items: center;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--color-border);
-      margin-bottom: 32px;
-    }
-
-    .location {
-      color: var(--color-text);
-    }
-
-    .links {
-      display: flex;
-      gap: 16px;
-    }
-
-    .links a {
-      color: var(--color-accent);
-      font-size: 0.9rem;
-    }
-
-    .section {
-      margin-bottom: 32px;
-    }
-
-    h2 {
-      font-size: 1rem;
-      color: var(--color-accent);
-      margin-bottom: 20px;
-    }
-
-    .job {
-      margin-bottom: 24px;
-      padding: 20px;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      background: var(--color-bg-card);
-    }
-
-    .job-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .job-header strong {
-      color: var(--color-text);
-    }
-
-    .date {
-      color: var(--color-text-subtle);
-      font-size: 0.85rem;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    li {
+      gap: 6px 24px;
+      margin-top: 20px;
       color: var(--color-text-muted);
-      padding: 6px 0;
-      padding-left: 16px;
-      position: relative;
-      line-height: 1.6;
     }
 
-    li::before {
-      content: ">";
-      position: absolute;
-      left: 0;
-      color: var(--color-text-subtle);
+    .summary {
+      color: var(--color-text-muted);
+      max-width: 68ch;
+      margin-top: 8px;
     }
 
-    @media (max-width: 600px) {
-      .job-header {
-        flex-direction: column;
-        gap: 4px;
-      }
+    h3 a {
+      color: var(--color-text);
+    }
+
+    h3 a:hover {
+      color: var(--color-accent-hover);
+    }
+
+    .entry.compact {
+      padding: 10px 0;
+      align-items: center;
+    }
+
+    .entry.compact .entry-date {
+      color: var(--color-text-muted);
+      padding-top: 0;
+    }
+
+    .level {
+      color: var(--color-text);
+    }
+
+    @media print {
       .contact {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        gap: 0 1.2rem;
+        margin-top: 4pt;
+      }
+
+      .summary {
+        max-width: none;
+        margin-top: 2pt;
+      }
+
+      .entry.compact {
+        padding: 2pt 0;
       }
     }
   </style>

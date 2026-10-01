@@ -1,52 +1,125 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import DroneNet from "../components/DroneNet.astro";
+import Terminal from "../components/Terminal.astro";
+import { getRecentCommits } from "../data/github";
+import { experience, profile, projects } from "../data/resume";
+
+const current = experience.find((job) => job.current);
+const commits = await getRecentCommits(profile.github.split("/").pop()!);
 ---
 
 <BaseLayout
   title="Efe Güçlü — Computer Science"
-  description="Computer science student focused on security, Linux systems, and cloud-native infrastructure."
+  description="Computer science and engineering at Sabancı University. Backend services, cloud infrastructure, and open source developer tooling."
 >
   <div class="hero">
-    <p class="prompt">$ whoami</p>
+    <DroneNet />
+    <p class="cmd">whoami</p>
     <h1>
       <span class="name glitch" data-text="Efe Güçlü">Efe Güçlü</span><span class="cursor"></span>
     </h1>
 
     <p class="bio">
-      Senior computer science student. I enjoy Linux, security, and cloud infrastructure.
-      I like understanding how systems work, building small automations, and contributing to open source.
+      Computer science and engineering at Sabancı University. I work on backend services,
+      cloud infrastructure, and developer tooling. I like understanding how systems work
+      and contributing to open source.
     </p>
 
     <div class="icons">
-      <a href="mailto:efeguclu3435@gmail.com" aria-label="Email">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      <a href="mailto:efeguclu3435@gmail.com">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        email
       </a>
-      <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer" aria-label="GitHub">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+      <a href="https://github.com/Efeguclu1" target="_blank" rel="noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        github
       </a>
-      <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer" aria-label="LinkedIn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+      <a href="https://www.linkedin.com/in/EfeGuclu1" target="_blank" rel="noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        linkedin
       </a>
     </div>
+
+    <Terminal commits={commits} />
   </div>
+
+  {current && (
+    <section class="section">
+      <p class="cmd">cat now.txt</p>
+      <div class="now">
+        <h2>{current.org}</h2>
+        <p class="now-role">{current.role}</p>
+        <p class="now-text">{current.points[0]}</p>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <p class="cmd">ls experience/</p>
+    <ul class="rows">
+      {experience.map((job) => (
+        <li>
+          <span class="row-date">{job.date}</span>
+          <span class="row-main">
+            <strong>{job.org}</strong>
+            <span class="row-sub">{job.role}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+    <a class="more" href="/cv">full cv</a>
+  </section>
+
+  <section class="section">
+    <p class="cmd">ls projects/</p>
+    <ul class="rows">
+      {projects.map((p) => (
+        <li>
+          <span class="row-date">{p.date}</span>
+          <span class="row-main">
+            <a href={`/projects#${p.slug}`}>{p.name}</a>
+            <span class="row-sub">{p.stack.join(" · ")}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+    <a class="more" href="/projects">all projects</a>
+  </section>
+
+  {commits.length > 0 && (
+    <section class="section">
+      <p class="cmd">git log --oneline -{commits.length}</p>
+      <ul class="rows">
+        {commits.map((commit) => (
+          <li>
+            <span class="row-date">{commit.date}</span>
+            <span class="row-main">
+              <a href={commit.url} target="_blank" rel="noreferrer">
+                <span class="sha">{commit.sha}</span> {commit.message}
+              </a>
+              <span class="row-sub">{commit.repo}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <a class="more" href={profile.github} target="_blank" rel="noreferrer">more on github</a>
+    </section>
+  )}
 
   <style>
     .hero {
-      padding: 40px 0;
-    }
-
-    .prompt {
-      color: var(--color-text-muted);
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+      position: relative;
+      padding: 56px 0 8px;
     }
 
     h1 {
-      font-size: 1.2rem;
-      color: var(--color-accent-hover);
-      margin-bottom: 24px;
+      font-size: clamp(1.4rem, 5.2vw, 2.4rem);
+      margin-bottom: 28px;
       display: flex;
       align-items: center;
+      /* A filter, not text-shadow: the typing clip on .name would cut a shadow off */
+      filter: drop-shadow(0 0 14px var(--color-glow));
     }
 
     /* Typing animation */
@@ -54,7 +127,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       display: inline-block;
       overflow: hidden;
       white-space: nowrap;
-      border-right: none;
       animation: typing 0.8s steps(9) forwards;
       width: 0;
     }
@@ -119,36 +191,106 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
 
     .bio {
-      color: var(--color-text);
-      line-height: 1.8;
-      max-width: 600px;
-      margin-bottom: 32px;
+      font-size: 1.05rem;
+      line-height: 1.75;
+      max-width: 58ch;
+      margin-bottom: 28px;
     }
 
     .icons {
       display: flex;
-      gap: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .icons a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
       color: var(--color-text-muted);
-      transition: color var(--transition-fast);
+      border: 1px solid var(--color-border);
+      transition: color var(--transition-fast), border-color var(--transition-fast),
+        background-color var(--transition-fast), transform var(--transition-fast);
     }
 
     .icons a:hover {
       color: var(--color-accent-hover);
+      border-color: var(--color-border-hover);
+      background: var(--color-bg-subtle);
     }
 
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1rem;
+    .icons a:active {
+      transform: translateY(1px);
+    }
+
+    .now {
+      border-left: 2px solid var(--color-accent);
+      padding: 4px 0 4px 20px;
+      max-width: 68ch;
+    }
+
+    .now h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .now-role {
+      color: var(--color-accent);
+      font-size: 0.9rem;
+    }
+
+    .now-text {
+      color: var(--color-text-muted);
+      margin-top: 10px;
+    }
+
+    .rows {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .rows li {
+      display: grid;
+      grid-template-columns: var(--date-col) minmax(0, 1fr);
+      gap: 0 32px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-bg-subtle);
+    }
+
+    .row-date {
+      color: var(--color-text-subtle);
+      font-size: 0.85rem;
+      padding-top: 2px;
+    }
+
+    .row-main strong {
+      font-weight: 600;
+    }
+
+    .sha {
+      color: var(--color-text-subtle);
+    }
+
+    .row-main a {
+      overflow-wrap: anywhere;
+    }
+
+    .row-sub {
+      display: block;
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding-top: 36px;
       }
-      .name {
-        animation: typing 0.8s steps(9) forwards;
-      }
-      @keyframes typing {
-        from { width: 0; }
-        to { width: 9ch; }
+      .rows li {
+        grid-template-columns: minmax(0, 1fr);
       }
     }
   </style>
