@@ -33,11 +33,14 @@ export const experience = [
     role: "Open Source Contributor, Hyperledger Labs (Fablo)",
     date: "2026 – Present",
     current: true,
-    points: [
+    summary:
       "Selected for the Linux Foundation LFX Mentorship to improve the developer experience of Fablo, a CLI tool that bootstraps Hyperledger Fabric networks (2.x/3.x) from a single configuration file.",
-      "Designing GitHub Actions workflows that leverage AI agents to keep documentation continuously in sync with the codebase, and building a GitHub Pages documentation site.",
-      "Adding npm as a new distribution channel alongside the existing Docker image, and authoring an agent skill file for Fablo.",
-      "Debugging and resolving network setup friction (intermittent errors, slow responsiveness) and submitting upstream fixes via PRs in TypeScript, Bash, and YAML.",
+    points: [
+      "Built the project's documentation website (fablo.io) with custom Jekyll layouts: landing page, Getting Started, CLI and configuration reference, and an Examples page.",
+      "Designed an automated docs-sync workflow that checks pull requests for documentation drift, reviews doc changes with Claude, and opens a weekly PR to bring docs back in line with the code.",
+      "Implemented an \"implement issue\" bot: a maintainer's /implement comment on a GitHub issue runs Claude Code, verifies the result with build, lint and tests, and opens a pull request.",
+      "Authored a reusable Fablo agent skill that teaches AI coding agents to configure, run and troubleshoot Fablo networks.",
+      "Developed an MCP server (fablo mcp) that lets AI agents start a Fabric network from a plain-language description and then stop, resume, snapshot and prune it.",
     ],
   },
   {

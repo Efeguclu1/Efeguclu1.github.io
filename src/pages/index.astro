@@ -50,7 +50,7 @@ const commits = await getRecentCommits(profile.github.split("/").pop()!);
       <div class="now">
         <h2>{current.org}</h2>
         <p class="now-role">{current.role}</p>
-        <p class="now-text">{current.points[0]}</p>
+        <p class="now-text">{current.summary ?? current.points[0]}</p>
       </div>
     </section>
   )}

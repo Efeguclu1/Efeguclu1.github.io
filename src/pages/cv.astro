@@ -64,6 +64,7 @@ const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "");
               {job.current && <span class="badge">now</span>}
             </h3>
             <p class="entry-role">{job.role}</p>
+            {job.summary && <p class="summary">{job.summary}</p>}
             <ul class="bullets">
               {job.points.map((point) => <li>{point}</li>)}
             </ul>

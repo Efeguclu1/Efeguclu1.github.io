@@ -59,7 +59,9 @@ const { commits = [] } = Astro.props;
 
     const fs: Dir = {
       "now.txt": () =>
-        current ? [current.org, current.role, "", current.points[0]] : ["nothing right now."],
+        current
+          ? [current.org, current.role, "", current.summary ?? current.points[0]]
+          : ["nothing right now."],
       "cv.md": () => [
         `# ${profile.name}`,
         profile.location,
@@ -81,7 +83,13 @@ const { commits = [] } = Astro.props;
       experience: Object.fromEntries(
         experience.map((j) => [
           `${slug(j.org)}.txt`,
-          () => [j.org, `${j.role} (${j.date})`, "", ...j.points.map((p) => `> ${p}`)],
+          () => [
+            j.org,
+            `${j.role} (${j.date})`,
+            "",
+            ...(j.summary ? [j.summary] : []),
+            ...j.points.map((p) => `> ${p}`),
+          ],
         ]),
       ),
       projects: Object.fromEntries(
